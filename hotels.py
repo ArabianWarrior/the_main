@@ -1,4 +1,6 @@
 from fastapi import  Query, APIRouter, Body
+
+from depensdecies import PaginationDep
 from shemas.hotels import Hotel, HotelIPatch
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
@@ -6,7 +8,7 @@ router = APIRouter(prefix="/hotels", tags=["Отели"])
 hotels = [
     {"id": 1, "title": "Sochi", "name": "sochi"},
     {"id": 2, "title": "Дубай", "name": "dubai"},
-        {"id": 3, "title": "Мальдивы", "name": "maldivi"},
+    {"id": 3, "title": "Мальдивы", "name": "maldivi"},
     {"id": 4, "title": "Геленджик", "name": "gelendzhik"},
     {"id": 5, "title": "Москва", "name": "moscow"},
     {"id": 6, "title": "Казань", "name": "kazan"},
@@ -16,10 +18,9 @@ hotels = [
 
 @router.get("/",summary="Получение отелей")
 def get_hotels(
+        pagination: PaginationDep,
         id: int | None = Query(None, description="Айдишник"),
         title: str | None = Query(None, description="Название отеля"),
-        page: int = Query(1, ge=1, description="Номер страницы"),
-    per_page: int = Query(10, ge=1, le=50, description="Количество отелей на странице"),
 ):
     hotels_ = []
     for hotel in hotels:
@@ -28,20 +29,10 @@ def get_hotels(
         if title and hotel["title"] != title:
             continue
         hotels_.append(hotel)
-    
-    start = (page - 1) * per_page
-    end = start + per_page
-    paginated_hotels = hotels_[start:end]
 
-    return {
-        "total_items": len(hotels_),  # Общее количество элементов после фильтрации
-        "page": page,
-        "per_page": per_page,
-        "total_pages": (len(hotels_) + per_page - 1) // per_page,  # Округление вверх
-        "data": paginated_hotels,
-    }
-    
-    
+    if pagination.page and pagination.per_page:
+        return hotels_[pagination.per_page * (pagination.page-1):][:pagination.per_page]
+    return hotels_
 
 
 @router.post("/",summary="Создать отель")
