@@ -1,59 +1,70 @@
 from fastapi import  Query, APIRouter, Body
 
+from sqlalchemy import Engine, insert, select
+
+from models.hotels import HotelsOrm
+
 from src.api.dependecies import PaginationDep
 from src.shemas.hotels import Hotel, HotelIPatch
+from src.database import async_session_maker
+from src.database import engine
+
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
-hotels = [
-    {"id": 1, "title": "Sochi", "name": "sochi"},
-    {"id": 2, "title": "Дубай", "name": "dubai"},
-    {"id": 3, "title": "Мальдивы", "name": "maldivi"},
-    {"id": 4, "title": "Геленджик", "name": "gelendzhik"},
-    {"id": 5, "title": "Москва", "name": "moscow"},
-    {"id": 6, "title": "Казань", "name": "kazan"},
-    {"id": 7, "title": "Санкт-Петербург", "name": "spb"},
-]
-
 
 @router.get("/",summary="Получение отелей")
-def get_hotels(
+async def get_hotels(
         pagination: PaginationDep,
-        id: int | None = Query(None, description="Айдишник"),
-        title: str | None = Query(None, description="Название отеля"),
+        id: str | None = Query(None, description="Айдишник"),
+        location: str | None = Query(None, description="Местополежние отеля"),
+        title: str | None = Query(None,description="Название отеля"),
 ):
-    hotels_ = []
-    for hotel in hotels:
-        if id and hotel["id"] != id:
-            continue
-        if title and hotel["title"] != title:
-            continue
-        hotels_.append(hotel)
+    per_page = pagination.per_page or 5
+    async with async_session_maker() as session:
+        query = select(HotelsOrm)
+        if location:
+            query = query.filter(HotelsOrm.location.ilike(f"%{location}%"))
+        if title:
+            query = query.filter(HotelsOrm.location.ilike(f"%{location}%"))
+        query = (
+            query
+            .limit(per_page)
+            .offset(per_page * (pagination.page-1))
+        )
+        
+        result = await session.execute(query)
+        hotels = result.scalars().all()
+        
+        #print(type(result), result)
+        
+        return hotels
 
-    if pagination.page and pagination.per_page:
-        return hotels_[pagination.per_page * (pagination.page-1):][:pagination.per_page]
-    return hotels_
+    #if pagination.page and pagination.per_page:
+        #return hotels_[pagination.per_page * (pagination.page-1):][:pagination.per_page]
+   
 
 
 @router.post("/",summary="Создать отель")
-def create_hotel(hotel_data: Hotel = Body(openapi_examples={
-    "1": {"summary": "Сочи", "value": {
-        "title": "Отель Сочи 5 звезд у моря",
-        "name": "sochi y morya",
+async def create_hotel(hotel_data: Hotel = Body(openapi_examples={
+    "1": {"summary": "Сочи", 
+          "value": {
+            "title": "Отель Сочи 5 звезд у моря",
+            "location": "ул. Лермонтова, 1",
     }},
-    "2": {"summary": "Москва", "value": {
-        "title": "Отель Москва у  красной площади", 
-        "name": "Moscow y red square",
+    "2": {"summary": "Москва", 
+          "value": {
+            "title": "Отель Москва у  красной площади", 
+            "location": "ул. Пушкина, 5",
     }},
 }),
 ):
-    
-    global hotels
-    hotels.append({
-        "id": hotels[-1]["id"] + 1,
-        "title": hotel_data.title,
-        "name": hotel_data.name,
-    })
+    async with async_session_maker() as session:
+        add_hotel_stmt = insert(HotelsOrm).values(**hotel_data.model_dump())
+        print(add_hotel_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
+        await session.execute(add_hotel_stmt)
+        await session.commit()
+
     return {"status": "OK"}
 
 
@@ -83,8 +94,16 @@ def partially_edit_hotel(
         hotel["name"] = hotel_data.name
     return {"status": "OK"}
 
-@router.delete("/{hotel_id}", summary="Удалить отель")
-def delete_hotel(hotel_id: int):
-    global hotels
-    hotels = [hotel for hotel in hotels if hotel["id"] != hotel_id]
-    return {"status": "OK"}
+@router.delete("/{hotel_id}", summary="Удаление отеля")
+async def delete_hotel(hotel_id: int):
+    async with async_session_maker() as session:
+    #Проверка существует ли такой id
+        query = select(HotelsOrm).filter(HotelsOrm.id == hotel_id)
+        result = await session.execute(query)
+        hotel = result.scalars().first()
+        if not hotel:
+            raise HTTPException(status_code=404, detail="Отель не найден")
+    
+        await session.delete(hotel)
+        await session.commit
+        return {"status": "OK"}
