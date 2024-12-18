@@ -1,6 +1,6 @@
 from fastapi import  Query, APIRouter, Body
 
-from sqlalchemy import Engine, insert, select
+from sqlalchemy import Engine, insert, select, func
 
 from models.hotels import HotelsOrm
 
@@ -16,28 +16,28 @@ router = APIRouter(prefix="/hotels", tags=["Отели"])
 @router.get("/",summary="Получение отелей")
 async def get_hotels(
         pagination: PaginationDep,
-        id: str | None = Query(None, description="Айдишник"),
-        location: str | None = Query(None, description="Местополежние отеля"),
+         id: int | None = Query(None, description="Айдишник"),
+        location: str | None = Query(None, description="Локация"),
         title: str | None = Query(None,description="Название отеля"),
 ):
     per_page = pagination.per_page or 5
     async with async_session_maker() as session:
         query = select(HotelsOrm)
         if location:
-            query = query.filter(HotelsOrm.location.ilike(f"%{location}%"))
+            query = query.filter(func.lower(HotelsOrm.location).like(f"%{location.strip().lower()}%"))
         if title:
-            query = query.filter(HotelsOrm.location.ilike(f"%{location}%"))
+            query = query.filter(func.lower(HotelsOrm.title).like(f"%{title.strip().lower()}%"))
         query = (
             query
             .limit(per_page)
             .offset(per_page * (pagination.page-1))
         )
-        
+        print(query.compile(compile_kwargs={"literal_binds": True}))
         result = await session.execute(query)
+        
+        
         hotels = result.scalars().all()
-        
         #print(type(result), result)
-        
         return hotels
 
     #if pagination.page and pagination.per_page:
