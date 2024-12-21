@@ -1,11 +1,12 @@
-from sqlalchemy import select
-
+from sqlalchemy import select, insert, update, delete
+from pydantic import BaseModel
 
 class BaseRepository:
     model = None
     
     def __init__(self, session):
         self.session = session
+        
     
     
     async def get_all(self, *args, **kwargs):
@@ -20,10 +21,35 @@ class BaseRepository:
             return result.scalars().one_or_none()
 
 
-    async def post_add(self, **data):
-          new_record = self.model(**data)
-          self.session.add(new_record)
-          await self.session.commit()
-          await self.session.refresh(new_record)
-          return new_record
+    async def add(self, data: BaseModel):
+          add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
+          result = await self.session.execute(add_data_stmt)
+          return result.scalars().one()
 
+
+    async def update_title(self, hotel_id: int, title: str):
+        data = {'title': title}
+        update_tit = (
+            update(self.model)
+            .where(self.model.id == hotel_id)
+            .values(**data)
+            .returning(self.model)
+        )
+        result = await self.session.execute(update_tit)
+        return result.scalars().one_or_none()
+
+    async def update_location(self, hotel_id: int, location: str):
+        data = {'location': location}
+        update_loc = (
+            update(self.model)
+            .where(self.model.id == hotel_id)
+            .values(**data)
+            .returning(self.model)
+        )
+        result = await self.session.execute(update_loc)
+        return result.scalars().one_or_none()
+
+    async def delete_hotel(self, model, hotel_id: int) -> None:
+         delete_stmt = delete(model).where(model.id == hotel_id)
+         await self.session.execute(delete_stmt)
+   

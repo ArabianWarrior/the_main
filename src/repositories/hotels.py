@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 from repositories.base import BaseRepository
 from models.hotels import HotelsOrm
 
@@ -30,7 +30,9 @@ class HotelsRepository(BaseRepository):
         
         return result.scalars().all()
     
-    async def get_add(self, title: str, location: str):
-        data = {"title": title, "location": location}
-        new_hotel = await self.post_add(**data)
-        return new_hotel
+
+    async def delete_hotel(self, hotel_id: int):
+        await super().delete_hotel(self.model, hotel_id)
+
+    
+    
