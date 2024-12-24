@@ -1,4 +1,4 @@
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, func
 from repositories.base import BaseRepository
 from models.hotels import HotelsOrm
 
@@ -31,8 +31,6 @@ class HotelsRepository(BaseRepository):
         return result.scalars().all()
     
 
-    async def delete_hotel(self, hotel_id: int):
-        await super().delete_hotel(self.model, hotel_id)
-
+  
     
     

@@ -4,6 +4,6 @@ class Hotel(BaseModel):
     title: str
     location: str
 
-class HotelIPatch(BaseModel):
+class HotelPATCH(BaseModel):
     title: str | None = Field(None)
     location: str | None = Field(None)
