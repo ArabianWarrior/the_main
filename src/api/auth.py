@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta, timezone
+from datetime import  datetime, timedelta, timezone
 
 from fastapi import APIRouter, HTTPException, Request, Response
 
+from src.api.dependecies import UserIdDep
 from config import settings
 from services.auth import AuthService
 from src.repositories.user import UsersRepository
@@ -60,13 +61,17 @@ async def register_user(
        await session.commit()
     
     return {"status": "OK"}
-
-@router.get("/only_auth")
-async def only_auth(
+ 
+@router.get("/me")
+async def get_me(
     request: Request,
+    user_id: UserIdDep,
 ):
-    cookies = request.cookies
-    access_token = cookies.get("access token") or None
-    if not access_token:
-        raise HTTPException(status_code=401, detail="Не аутенфецирован")
-    return {"message": "Access granted", "access_token": access_token}
+    async with async_session_maker() as session:
+        user = await UsersRepository(session).get_one_or_none(id=user_id)
+        return user
+    
+@router.post("/logout")
+async def log_out(response: Response):
+    response.delete_cookie("access_token")
+    return{"status": "OK"}
