@@ -10,7 +10,6 @@ class BaseRepository:
     
     def __init__(self, session):
         self.session = session
-    
 
     async def get_all(self, *args, **kwargs):
         query = select(self.model)
