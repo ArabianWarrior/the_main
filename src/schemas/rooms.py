@@ -1,4 +1,6 @@
 from pydantic import BaseModel, ConfigDict
+
+
 class RoomAddRequest(BaseModel):
     title: str
     description: str | None = None

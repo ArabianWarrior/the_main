@@ -1,71 +1,48 @@
-from fastapi import APIRouter, Body, HTTPException
-from src.schemas.rooms import Rooms, RoomsAdd, RoomsAddRequest, RoomsPatch, RoomsPatchRequest
-from src.repositories.rooms import RoomsRepository
-from src.database import async_session_maker
+from fastapi import APIRouter, Body
+from src.schemas.rooms import RoomAdd, RoomAddRequest, RoomPatchRequest, RoomPatch
+from src.api.dependecies import PaginationDep, DBDep
 
 
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
 
+
 @router.get("/{hotel_id}/rooms")
-async def get_all_rooms():
-    async with async_session_maker() as session:
-        rooms = await RoomsRepository(session).get_all()
-        return rooms
+async def get_rooms(hotel_id: int, db: DBDep):
+        return await db.rooms.get_filtered(hotel_id=hotel_id)
 
 @router.get("/{hotel_id}/rooms/{room_id}")
-async def get_room(hotel_id: int, room_id: int):
-    async with async_session_maker() as session:
-        room = await RoomsRepository(session).get_one_or_none(id=room_id)
-        if not room:
-            raise HTTPException(status_code=404, detail="Комната не найдена")
-        return room
+async def get_room(hotel_id: int, room_id: int, db: DBDep):
+        return await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id)
 
 @router.post("/{hotel_id}/rooms")
-async def create_room(hotel_id: int, room_data: RoomsAddRequest = Body()):
-    _room_data = RoomsAdd(hotel_id = hotel_id, **room_data.model_dump())
-    async with async_session_maker() as session:
-        room = await RoomsRepository(session).add(room_data)
-        await session.commit()
-    
+async def create_room(db: DBDep, hotel_id: int, room_data: RoomAddRequest = Body()):
+    _room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
+    room = await db.rooms.add(_room_data)
+    await db.commit()
     return {"status": "OK", "data": room}
-
-@router.put("/{hotel_id}/rooms/{room_id}")
-async def replace_room(hotel_id, room_id: int, room_data: RoomsAddRequest):
-    _room_data = RoomsAdd(hotel_id = hotel_id, **room_data.model_dump())
-    async with async_session_maker() as session:
-        room = await RoomsRepository(session).get_one_or_none(id=id)
-        if not room:
-            raise HTTPException(status_code=404, detail="Комната не найдена")
-        
-        await RoomsRepository(session).edit(_room_data, id=room_id)
-        updated_room = await RoomsRepository(session).get_one_or_none(id=id)
-        await session.commit()
     
-    return updated_room
+@router.put("/{hotel_id}/rooms/{room_id}")
+async def edit_room(db: DBDep,hotel_id: int, room_id: int, room_data: RoomAddRequest):
+    _room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
+    await db.rooms.edit(_room_data, id=room_id)
+    await db.commit()
+    return {"status": "OK"}
 
 @router.patch("/{hotel_id}/rooms/{room_id}")
 async def partially_edit_room(
+        db: DBDep,
         hotel_id: int,
-        room_id: int, 
-        room_data: RoomsPatchRequest
+        room_id: int,
+        room_data: RoomPatchRequest,
 ):
-       
-    _room_data = RoomsPatch(hotel_id = hotel_id, **room_data.model_dump(exclude_unset=True))
-    async with async_session_maker() as session:
-
-        await RoomsRepository(session).edit(
-            _room_data, 
-            exclude_unset=True, 
-            id=room_id, 
-            hotel_id=hotel_id)
-        await session.commit()
-
-        return {"status": "OK"}
+    _room_data = RoomPatch(hotel_id=hotel_id, **room_data.model_dump(exclude_unset=True))
+    await db.rooms.edit(_room_data, exclude_unset=True, id=room_id, hotel_id=hotel_id)
+    await db.commit()
+    return {"status": "OK"}
 
 @router.delete("/{hotel_id}/rooms/{room_id}")
-async def delete_room(hotel_id: int, room_id: int):
-    async with async_session_maker() as session:
-        await RoomsRepository(session).delete(id=room_id,hotel_id=hotel_id)
-        await session.commit()
+async def delete_room(db: DBDep, hotel_id: int, room_id: int):
+    await db.rooms.delete(id=room_id, hotel_id=hotel_id)
+    await db.commit()
     return {"status": "OK"}

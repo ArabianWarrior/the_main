@@ -1,8 +1,8 @@
-"""initial migration 
+"""add hotels
 
-Revision ID: a6910c9744cd
-Revises: b1a5450b131f
-Create Date: 2024-12-15 15:27:14.290142
+Revision ID: 282e93ca6c89
+Revises: 0d4f88350b24
+Create Date: 2025-01-05 12:22:00.087388
 
 """
 
@@ -12,18 +12,17 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision: str = "a6910c9744cd"
-down_revision: Union[str, None] = "b1a5450b131f"
+
+revision: str = "282e93ca6c89"
+down_revision: Union[str, None] = "0d4f88350b24"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    
     pass
-   
+
 
 def downgrade() -> None:
-   
     pass
-  
+   
