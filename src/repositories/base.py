@@ -11,6 +11,7 @@ class BaseRepository:
 
     async def get_all(self, *args, **kwargs):
         query = select(self.model)
+    
     async def get_filtered(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query)
@@ -18,6 +19,7 @@ class BaseRepository:
 
     async def get_all(self, *args, **kwargs):
         return await self.get_filtered()
+    
     async def get_one_or_none(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query)
