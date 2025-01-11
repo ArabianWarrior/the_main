@@ -1,5 +1,5 @@
 from sqlalchemy.orm import  mapped_column, Mapped
-from sqlalchemy import Integer, ForeignKey
+from sqlalchemy import Date, Integer, ForeignKey
 from src.database import Base
 
 from datetime import date
@@ -12,8 +12,8 @@ class BookingsOrm(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column (ForeignKey("users.id"))
     room_id: Mapped[int] = mapped_column (ForeignKey("rooms.id"))
-    data_from: Mapped[date]
-    data_to: Mapped[date] 
+    data_from: Mapped[date] = mapped_column(Date)
+    data_to: Mapped[date]  = mapped_column(Date)
     price: Mapped[int] 
 
     @hybrid_property

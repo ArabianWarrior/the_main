@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Body
+from datetime import date
+from fastapi import APIRouter, Body, Query
 from src.schemas.rooms import RoomAdd, RoomAddRequest, RoomPatchRequest, RoomPatch
-from src.api.dependecies import PaginationDep, DBDep
+from src.api.dependecies import DBDep
+
 
 
 
@@ -8,8 +10,13 @@ router = APIRouter(prefix="/hotels", tags=["Номера"])
 
 
 @router.get("/{hotel_id}/rooms")
-async def get_rooms(hotel_id: int, db: DBDep):
-        return await db.rooms.get_filtered(hotel_id=hotel_id)
+async def get_rooms(
+        hotel_id: int, 
+        db: DBDep,
+        data_from: date = Query(example="2025-01-01"),
+        data_to: date = Query(example="2025-01-05"),
+):
+    return await db.rooms.get_filtered_by_time(hotel_id=hotel_id,data_from=data_from,data_to=data_to)
 
 @router.get("/{hotel_id}/rooms/{room_id}")
 async def get_room(hotel_id: int, room_id: int, db: DBDep):
