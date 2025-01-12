@@ -12,9 +12,7 @@ async def get_hotels(
         pagination: PaginationDep,
         db: DBDep,
         location: str | None = Query(None, description="Локация"),
-        title: str | None = Query(None,description="Название отеля"),
-        limit: int = 10,
-        offset: int = 0,
+        title: str | None = Query(None, description="Название отеля"),
         data_from: date = Query(example="2025-01-01"),
         data_to: date = Query(example="2025-01-05"),
  ):
@@ -25,8 +23,8 @@ async def get_hotels(
         data_to=data_to,
         location=location,
         title=title,
-        limit=limit,
-        offset=offset
+        limit=per_page,
+        offset=per_page * (pagination.page - 1)
     )
 
 

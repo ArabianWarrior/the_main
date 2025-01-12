@@ -11,10 +11,6 @@ def rooms_ids_for_booking(
         data_from: date,
         data_to: date,
         hotel_id: int | None = None,
-        location: str | None = None,
-        title: str | None = None,
-        limit: int | None = None,
-        offset: int | None = None,
 ):
 
         rooms_count = (
