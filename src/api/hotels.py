@@ -28,9 +28,6 @@ async def get_hotels(
     )
 
 
-
-
-
 @router.get("/{hotel_id}")
 async def get_hotel(hotel_id: int, db: DBDep):
     return await db.hotels.get_one_or_none(id=hotel_id)

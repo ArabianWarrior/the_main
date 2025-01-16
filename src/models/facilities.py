@@ -3,13 +3,13 @@ from sqlalchemy import String, ForeignKey
 
 from src.database import Base
 
-class Facilities(Base):
+class FacilitiesOrm(Base):
     __tablename__ = "facilities"
 
     id: Mapped [int] = mapped_column(primary_key=True)
     title: Mapped [str] = mapped_column(String(100))
 
-class RoomsFacilities(Base):
+class RoomsFacilitiesOrm(Base):
     __tablename__ = "rooms_facilities"
 
     id: Mapped [int] = mapped_column(primary_key=True)
