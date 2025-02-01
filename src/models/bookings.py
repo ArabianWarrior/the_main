@@ -8,6 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 class BookingsOrm(Base):
     __tablename__ = "bookings"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column (ForeignKey("users.id"))

@@ -3,11 +3,13 @@ from fastapi import Query, APIRouter, Body
 from src.api.dependecies import PaginationDep, DBDep
 from src.schemas.hotels import  HotelAdd, HotelPATCH
 
+from fastapi_cache.decorator import cache 
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
 
 @router.get("")
+@cache(expire=10)
 async def get_hotels(
         pagination: PaginationDep,
         db: DBDep,
@@ -29,10 +31,12 @@ async def get_hotels(
 
 
 @router.get("/{hotel_id}")
+@cache(expire=10)
 async def get_hotel(hotel_id: int, db: DBDep):
     return await db.hotels.get_one_or_none(id=hotel_id)
 
 @router.post("")
+@cache(expire=10)
 async def create_hotel(db: DBDep, hotel_data: HotelAdd = Body(openapi_examples={
     "1": {"summary": "Сочи", 
           "value": {
@@ -50,6 +54,7 @@ async def create_hotel(db: DBDep, hotel_data: HotelAdd = Body(openapi_examples={
     await db.commit()
    
 @router.put("/{hotel_id}", summary="Редактировать отель")
+@cache(expire=10)
 async def edit_hotel(hotel_id: int, db: DBDep):
     await db.hotels.edit(id=hotel_id)  
     await db.commit()
@@ -60,6 +65,7 @@ async def edit_hotel(hotel_id: int, db: DBDep):
     summary="Частичное обновление данных об отеле",
     description="<h1>Тут мы частично обновляем данные об отеле: можно отправить name, а можно title</h1>",
 )
+@cache(expire=10)
 async def partially_edit_hotel(
         hotel_id: int,
         hotel_data: HotelPATCH,
@@ -70,6 +76,7 @@ async def partially_edit_hotel(
     return {"status": "OK"}
 
 @router.delete("/{hotel_id}", summary="Удаление отеля")
+@cache(expire=10)
 async def delete(hotel_id: int, db: DBDep):
     await db.hotels.delete(id=hotel_id)
     await db.commit()

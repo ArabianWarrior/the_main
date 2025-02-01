@@ -5,8 +5,6 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from src.api.dependecies import UserIdDep, DBDep
 from config import settings
 from services.auth import AuthService
-from src.repositories.user import UsersRepository
-from src.database import async_session_maker
 import jwt
 
 from passlib.context import CryptContext
@@ -29,9 +27,6 @@ def create_access_token(data: dict) -> str:
     to_encode |= {"exp": expire}
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm= settings.JWT_ALGORITHM)
     return encoded_jwt
-
-
-
 
 
 @router.post("/register")

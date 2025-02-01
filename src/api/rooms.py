@@ -23,7 +23,7 @@ async def get_rooms(
 
 @router.get("/{hotel_id}/rooms/{room_id}")
 async def get_room(hotel_id: int, room_id: int, db: DBDep):
-        return await db.rooms.get_room_with_facilities(room_id=room_id)
+    return await db.rooms.get_room_with_rels(id=room_id, hotel_id=hotel_id)
 
 @router.post("/{hotel_id}/rooms")
 async def create_room(hotel_id: int, room_id: int, db: DBDep, room_data: RoomAddRequest = Body()):

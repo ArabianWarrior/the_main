@@ -7,6 +7,7 @@ from src.database import Base
 
 class UsersOrm(Base):
     __tablename__ = "users"
+    __table_args__ = {"extend_existing": True}
    
 
     id: Mapped[int] = mapped_column(primary_key=True)
