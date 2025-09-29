@@ -2,7 +2,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, ForeignKey, Text
 from src.database import Base
 
-
+    
 class RoomsOrm(Base):
     __tablename__ = "rooms"
     __table_args__ = {"extend_existing": True}

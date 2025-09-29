@@ -29,7 +29,6 @@ async def get_hotels(
         offset=per_page * (pagination.page - 1)
     )
 
-
 @router.get("/{hotel_id}")
 @cache(expire=10)
 async def get_hotel(hotel_id: int, db: DBDep):

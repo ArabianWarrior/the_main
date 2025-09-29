@@ -2,8 +2,8 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from repositories.mapper.mappers import RoomDataMapper, RoomDataWithRelsMapper
-from repositories.utils import rooms_ids_for_booking
+from src.repositories.mapper.mappers import RoomDataMapper, RoomDataWithRelsMapper
+from src.repositories.utils import rooms_ids_for_booking
 from src.repositories.base import BaseRepository
 from src.models.rooms import RoomsOrm
 
